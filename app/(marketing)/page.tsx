@@ -1,9 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Lock, Scale, LogOut, FileSignature, Globe, Timer } from "lucide-react";
+import {
+  ArrowRight,
+  Lock,
+  Scale,
+  LogOut,
+  FileSignature,
+  Globe,
+  Timer,
+  HandCoins,
+  ShieldCheck,
+  Undo2,
+} from "lucide-react";
 import { users, trajectories, projects } from "@/lib/data";
+import { getFundingSummaries } from "@/lib/chain/read";
 import { HeroField } from "@/components/marketing/HeroField";
 import { Reveal } from "@/components/marketing/Reveal";
+import { FundingBadge } from "@/components/funding/FundingBadge";
 import { Avatar, Card } from "@/components/ui";
 
 export const metadata: Metadata = {
@@ -70,7 +83,28 @@ const RULES = [
   },
 ];
 
-export default function LandingPage() {
+const SUPPORT_STEPS = [
+  {
+    icon: HandCoins,
+    title: "Aportas lo que quieras",
+    body: "El dinero no va al líder. Entra a un contrato que lo retiene, y cualquiera puede comprobar el saldo en cualquier momento.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Se libera por tramos, contra entregas",
+    body: "El equipo presenta la evidencia de un hito y un verificador la aprueba. Recién ahí se suelta una parte. Nadie puede vaciar la caja.",
+  },
+  {
+    icon: Undo2,
+    title: "Si el proyecto muere, recuperas lo tuyo",
+    body: "Lo que no se llegó a liberar vuelve a quien aportó, en proporción exacta a lo que puso cada uno.",
+  },
+];
+
+export default async function LandingPage() {
+  const funding = await getFundingSummaries(projects.map((p) => p.slug));
+  const fundable = projects.filter((p) => funding[p.slug]).slice(0, 3);
+
   const builders = [...users]
     .filter((u) => u.completionRate !== null && u.reputation.count > 0)
     .sort((a, b) => (b.completionRate ?? 0) - (a.completionRate ?? 0));
@@ -267,6 +301,103 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* -------------------------------- Apoyar ---------------------------------- */}
+      <section id="apoyar" className="border-t border-line">
+        <div className="mx-auto max-w-6xl px-4 py-16 lg:px-8 lg:py-24">
+          <div className="lg:grid lg:grid-cols-[1fr_420px] lg:items-start lg:gap-16">
+            <Reveal>
+              <p className="label">Apoyar un proyecto</p>
+              <h2 className="display mt-4 max-w-2xl text-4xl lg:text-5xl">
+                No hace falta saber programar para que algo llegue al final.
+              </h2>
+              <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-dim">
+                Cualquiera puede aportar dinero a un proyecto: quien lidera,
+                quien colabora y quien entró solo a mirar. Lo único que
+                necesitas es una wallet.
+              </p>
+
+              <ol className="mt-10 space-y-5">
+                {SUPPORT_STEPS.map((s, i) => {
+                  const Icon = s.icon;
+                  return (
+                    <Reveal key={s.title} delay={i * 0.08}>
+                      <li className="flex gap-4">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft">
+                          <Icon className="h-[18px] w-[18px] text-brand" />
+                        </span>
+                        <div className="min-w-0">
+                          <h3 className="text-[17px] font-semibold leading-snug">
+                            {s.title}
+                          </h3>
+                          <p className="mt-1.5 text-[15px] leading-relaxed text-dim">
+                            {s.body}
+                          </p>
+                        </div>
+                      </li>
+                    </Reveal>
+                  );
+                })}
+              </ol>
+
+              <Reveal delay={0.3}>
+                <p className="mt-8 max-w-xl border-l-2 border-brand pl-5 text-[15px] leading-relaxed">
+                  Cada movimiento queda registrado con su transacción. No hay
+                  que creerle a nadie:{" "}
+                  <strong className="font-medium">
+                    se comprueba en el explorador de bloques.
+                  </strong>
+                </p>
+              </Reveal>
+            </Reveal>
+
+            {/* Proyectos con tesorería abierta, con cifras reales de la cadena. */}
+            <Reveal delay={0.15} className="mt-12 lg:mt-0">
+              {fundable.length === 0 ? (
+                <Card>
+                  <p className="label">Tesorerías</p>
+                  <p className="mt-2 text-[15px] leading-relaxed text-dim">
+                    Las tesorerías se abren cuando cada equipo publica su
+                    roadmap definitivo. Muy pronto vas a poder apoyar desde
+                    aquí.
+                  </p>
+                  <Link
+                    href="/proyectos"
+                    className="label mt-4 inline-flex items-center gap-1.5 text-brand hover:underline"
+                  >
+                    Ver los proyectos
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  <p className="label">Recaudando ahora</p>
+                  {fundable.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={`/proyectos/${p.slug}`}
+                      className="card block p-4 transition-colors hover:border-brand/50"
+                    >
+                      <h3 className="display text-xl">{p.title}</h3>
+                      <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-dim">
+                        {p.summary}
+                      </p>
+                      <FundingBadge summary={funding[p.slug]} />
+                    </Link>
+                  ))}
+                  <Link
+                    href="/proyectos"
+                    className="label inline-flex items-center gap-1.5 text-brand hover:underline"
+                  >
+                    Ver todos los proyectos
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              )}
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
       {/* ------------------------------- Reputación -------------------------------- */}
       <section id="reputacion" className="border-t border-line bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-16 lg:px-8 lg:py-24">
@@ -343,8 +474,9 @@ export default function LandingPage() {
               <span className="text-brand">Falta que quede probado.</span>
             </h2>
             <p className="mx-auto mt-6 max-w-md text-[16px] leading-relaxed text-dim">
-              Entra a un proyecto que necesite lo que sabes hacer, o publica el
-              que llevas meses queriendo empezar.
+              Entra a un proyecto que necesite lo que sabes hacer, publica el
+              que llevas meses queriendo empezar, o pon dinero para que otro
+              llegue al final.
             </p>
 
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
@@ -363,8 +495,16 @@ export default function LandingPage() {
               </Link>
             </div>
 
+            <p className="mt-6 text-[14px] text-dim">
+              ¿Solo quieres apoyar?{" "}
+              <Link href="#apoyar" className="text-brand hover:underline">
+                Así funcionan los aportes
+              </Link>
+            </p>
+
             <p className="label mt-8">
-              Sin costo · El trabajo es voluntario y así está declarado en cada rol
+              Aportar no requiere cuenta · El trabajo del equipo es voluntario y
+              así está declarado en cada rol
             </p>
           </Reveal>
         </div>

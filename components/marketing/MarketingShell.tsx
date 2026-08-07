@@ -13,6 +13,7 @@ const LINKS = [
   { href: "#problema", label: "El problema" },
   { href: "#como-funciona", label: "Cómo funciona" },
   { href: "#reglas", label: "Las reglas" },
+  { href: "#apoyar", label: "Apoyar" },
 ];
 
 export function MarketingShell({ children }: { children: React.ReactNode }) {
@@ -139,6 +140,11 @@ function Footer() {
                 <li>
                   <a href="#reglas" className="text-[14px] text-dim hover:text-text">
                     Las reglas
+                  </a>
+                </li>
+                <li>
+                  <a href="#apoyar" className="text-[14px] text-dim hover:text-text">
+                    Apoyar un proyecto
                   </a>
                 </li>
                 <li>

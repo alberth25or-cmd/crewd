@@ -139,10 +139,12 @@ Ver [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) para el detalle.
 
 ## Decisiones que conviene conocer antes de tocar el código
 
-**La cadena es invisible salvo para el donante.** El constructor —usuario
-primario— no ve wallets, direcciones ni jerga cripto en ninguna pantalla. El
-diálogo de donación es el único punto donde aparece una wallet, y su código
-solo se descarga si alguien lo abre.
+**La cadena es invisible hasta que decides mover dinero.** Aportar está
+abierto a cualquiera —quien lidera, quien colabora y quien entró solo a
+mirar—, y las cifras de cada tesorería se ven en el listado, el detalle y la
+landing. Pero navegar, postular, cerrar sprints y evaluar no piden wallet en
+ningún momento. El diálogo de aporte es el único punto donde aparece una, y su
+código solo se descarga si alguien lo abre.
 
 **Las lecturas on-chain ocurren en el servidor.** El navegador nunca habla con
 el RPC para leer: la página llega renderizada, un teléfono lento no espera una

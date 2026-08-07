@@ -47,6 +47,20 @@ export interface FundingState {
   contractAddress: Address;
 }
 
+/**
+ * Versión ligera para listados. Serializa los importes a texto porque los
+ * componentes de servidor no pueden pasar `bigint` a los de cliente.
+ */
+export interface FundingSummary {
+  projectId: string;
+  totalRaised: string;
+  totalReleased: string;
+  escrow: string;
+  status: ProjectStatus;
+  symbol: string;
+  decimals: number;
+}
+
 export type TraceKind = "donacion" | "liberacion" | "fallo" | "reembolso";
 
 export interface TraceEntry {
@@ -131,6 +145,69 @@ export const getFundingState = cache(
     } catch (error) {
       console.error(`[chain] no se pudo leer la tesorería de "${slug}"`, error);
       return null;
+    }
+  }
+);
+
+/**
+ * Estado de financiamiento de varios proyectos a la vez, para los listados.
+ *
+ * Cualquiera puede aportar a un proyecto —quien construye, quien colabora y
+ * quien solo entró a mirar—, así que las cifras tienen que estar visibles
+ * desde el listado y no escondidas en el detalle.
+ *
+ * Las lecturas van en paralelo y el transporte las agrupa en una sola
+ * petición HTTP. Devuelve un objeto plano, apto para pasar a un componente
+ * de cliente.
+ */
+export const getFundingSummaries = cache(
+  async (slugs: string[]): Promise<Record<string, FundingSummary>> => {
+    // Se capturan en constantes locales porque TypeScript no conserva el
+    // estrechamiento de un binding importado dentro de un callback: no puede
+    // probar que nadie lo reasignó entre medias.
+    const funding = fundingAddress;
+    const stablecoin = stablecoinAddress;
+    if (!isChainConfigured || !funding || !stablecoin) return {};
+
+    try {
+      const token = await getTokenMeta(publicClient, stablecoin, chain.id);
+
+      const entries = await Promise.all(
+        slugs.map(async (slug) => {
+          const projectId = await publicClient.readContract({
+            address: funding,
+            abi: crewdFundingAbi,
+            functionName: "projectIdBySlugHash",
+            args: [keccak256(toBytes(slug))],
+          });
+
+          if (projectId === 0n) return null;
+
+          const project = await publicClient.readContract({
+            address: funding,
+            abi: crewdFundingAbi,
+            functionName: "getProject",
+            args: [projectId],
+          });
+
+          const summary: FundingSummary = {
+            projectId: projectId.toString(),
+            totalRaised: project.totalRaised.toString(),
+            totalReleased: project.totalReleased.toString(),
+            escrow: (project.totalRaised - project.totalReleased).toString(),
+            status: STATUS[project.status] ?? "activo",
+            symbol: token.symbol,
+            decimals: token.decimals,
+          };
+
+          return [slug, summary] as const;
+        })
+      );
+
+      return Object.fromEntries(entries.filter((e) => e !== null));
+    } catch (error) {
+      console.error("[chain] no se pudieron leer los resúmenes de financiamiento", error);
+      return {};
     }
   }
 );

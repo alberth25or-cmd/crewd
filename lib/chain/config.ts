@@ -31,7 +31,12 @@ export const isChainConfigured = Boolean(fundingAddress && stablecoinAddress);
 
 export const publicClient = createPublicClient({
   chain,
-  transport: http(process.env.NEXT_PUBLIC_RPC_URL || undefined),
+  // `batch` agrupa varias llamadas en una sola petición HTTP. El listado de
+  // proyectos lee el estado de todos a la vez, y sin esto serían una decena
+  // de viajes de ida y vuelta al RPC por cada carga de página.
+  transport: http(process.env.NEXT_PUBLIC_RPC_URL || undefined, {
+    batch: { wait: 8 },
+  }),
 });
 
 const EXPLORERS: Record<number, string> = {

@@ -75,17 +75,25 @@ escritorio con barra lateral persistente. Mismas rutas, distinta densidad.
 `getFundingState` y `getFundingTrace` van envueltas en `cache()` de React, así
 que varios componentes de la misma página comparten una sola lectura.
 
-### Por qué la wallet solo está en el flujo de donante
+### Por qué la wallet solo aparece al aportar
 
 El documento de producto dice que la cadena debe ser invisible: sin "Connect
-Wallet", sin direcciones `0x…`, sin jerga cripto. Pero donar exige firmar.
+Wallet", sin direcciones `0x…`, sin jerga cripto. Pero aportar exige firmar.
 
-La contradicción se resuelve separando por persona, no por pantalla:
+La contradicción se resuelve separando por **acción**, no por persona.
+Aportar no es cosa de un tipo de usuario: quien lidera un proyecto, quien
+colabora en otro y quien entró solo a mirar pueden hacerlo por igual, y a
+menudo son la misma persona en momentos distintos.
 
-- **El constructor** —usuario primario, 20-28 años, sin contexto cripto— no ve
-  una wallet en ninguna pantalla del producto.
-- **El donante** es otra persona con otra expectativa. Quien va a mover dinero
-  espera que le pidan firmar.
+Lo que se respeta es que **nadie ve cripto hasta que decide mover dinero**:
+
+- Navegar, postular, cerrar sprints y evaluar no piden wallet en ningún
+  momento. Ni una dirección, ni una firma, ni una palabra de jerga.
+- La wallet aparece cuando alguien pulsa *Aportar*, y solo entonces.
+
+Las cifras de financiamiento sí son visibles en todas partes —listado,
+detalle y landing— porque si no se ven, nadie descubre que puede apoyar.
+Mirar es público; firmar es opcional.
 
 Consecuencia técnica: **no hay proveedor global de web3**. Nada de wagmi
 envolviendo la aplicación. `DonateDialog` crea sus clientes de viem cuando se
