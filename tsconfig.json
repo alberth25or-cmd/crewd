@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    // ES2020 es el mínimo para literales BigInt (`0n`), que la capa on-chain
+    // usa en todas partes: los importes de un token nunca deben pasar por
+    // `number`. Todos los navegadores con los que se prueba lo soportan.
+    "target": "ES2020",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  // `contracts` tiene su propio tsconfig y su propio runner (Hardhat), y
+  // `yapeinterface` es el prototipo de referencia. Ninguno debe entrar en el
+  // chequeo de tipos de la aplicación de Next.
+  "exclude": ["node_modules", "yapeinterface", "contracts"]
+}
