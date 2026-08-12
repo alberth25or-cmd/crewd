@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Crewd — Arquitectura</title>
+<style>
+  /* Fuente para imprimir. Se renderiza con Chrome headless:
+     node scripts/build-pdf.mjs  */
+  @page { size: A4; margin: 14mm 13mm; }
+
+  :root {
+    --ink: #15181b;
+    --dim: #5f6569;
+    --line: #d3d7dd;
+    --surface: #f6f7f9;
+    --brand: #1f2bb8;
+    --brand-2: #4a63f0;
+    --accent: #a8630a;
+    --danger: #8a2a2a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 10.5px;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 30px;
+    font-weight: normal;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  h2 {
+    font-family: Georgia, serif;
+    font-size: 17px;
+    font-weight: normal;
+    margin: 0 0 8px;
+  }
+  h3 {
+    font-size: 11px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+
+  .label {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 8px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .lead { color: var(--dim); max-width: 58ch; margin: 6px 0 0; }
+
+  header { border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 16px; }
+  .meta { display: flex; gap: 22px; margin-top: 8px; }
+  .meta b { font-weight: 600; display: block; font-size: 10px; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+  .card.accent { border-color: rgba(168,99,10,.45); background: rgba(168,99,10,.05); }
+  .card.brand { border-color: rgba(31,43,184,.35); background: rgba(31,43,184,.04); }
+
+  ol.steps { margin: 0; padding-left: 0; list-style: none; counter-reset: s; }
+  ol.steps li {
+    counter-increment: s;
+    padding: 5px 0 5px 26px;
+    position: relative;
+    border-bottom: 1px solid var(--line);
+  }
+  ol.steps li:last-child { border-bottom: 0; }
+  ol.steps li::before {
+    content: counter(s, decimal-leading-zero);
+    position: absolute; left: 0; top: 5px;
+    font-family: Consolas, monospace; font-size: 9px; color: var(--brand);
+  }
+
+  code { font-family: Consolas, monospace; font-size: 9.5px; color: var(--brand); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  td, th { text-align: left; padding: 4px 6px 4px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 8px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); font-weight: 500; }
+
+  .note { border-left: 2px solid var(--brand); padding-left: 10px; color: var(--dim); }
+  .note.accent { border-color: var(--accent); }
+
+  footer { margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+
+<!-- ============================ PÁGINA 1 ============================ -->
+<section class="page">
+  <header>
+    <p class="label">Arquitectura del sistema</p>
+    <h1>Crewd</h1>
+    <p class="lead">
+      Plataforma para proponer proyectos, reclutar equipo y llevarlos hasta el
+      final, con reputación verificable y tesorería on-chain.
+    </p>
+    <div class="meta">
+      <span><b>Red</b><span class="label">Arbitrum Sepolia · 421614</span></span>
+      <span><b>Hosting</b><span class="label">Vercel · renderizado en servidor</span></span>
+      <span><b>Estado</b><span class="label">MVP de testnet · sin auditar</span></span>
+    </div>
+  </header>
+
+  <svg viewBox="0 0 780 752" width="100%" role="img"
+       aria-label="Diagrama de tres capas: navegador, Vercel y Arbitrum Sepolia">
+    <defs>
+      <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3"
+              orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L7,3 z" fill="#1f2bb8"/>
+      </marker>
+      <marker id="arrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="3"
+              orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L7,3 z" fill="#a8630a"/>
+      </marker>
+    </defs>
+
+    <!-- ---------------- Banda 1: navegador ---------------- -->
+    <text x="2" y="14" font-family="Consolas,monospace" font-size="9"
+          letter-spacing="1.6" fill="#5f6569">NAVEGADOR</text>
+    <rect x="0" y="22" width="700" height="176" rx="9" fill="#f6f7f9" stroke="#d3d7dd"/>
+
+    <rect x="18" y="48" width="196" height="58" rx="6" fill="#fff" stroke="#d3d7dd"/>
+    <text x="32" y="72" font-size="12" font-weight="600" fill="#15181b">Landing pública</text>
+    <text x="32" y="90" font-family="Consolas,monospace" font-size="9" fill="#5f6569">/</text>
+
+    <rect x="230" y="48" width="212" height="58" rx="6" fill="#fff" stroke="#d3d7dd"/>
+    <text x="244" y="72" font-size="12" font-weight="600" fill="#15181b">Producto</text>
+    <text x="244" y="90" font-family="Consolas,monospace" font-size="9" fill="#5f6569">/inicio · /proyectos · /retos · /u</text>
+
+    <rect x="458" y="48" width="224" height="58" rx="6" fill="#fdf6ec" stroke="#a8630a" stroke-opacity=".5"/>
+    <text x="472" y="72" font-size="12" font-weight="600" fill="#a8630a">DonateDialog</text>
+    <text x="472" y="90" font-family="Consolas,monospace" font-size="9" fill="#a8630a">único punto con wallet</text>
+
+    <text x="18" y="136" font-size="10.5" fill="#5f6569">
+      Componentes de servidor por defecto. Solo son de cliente los filtros del listado,
+    </text>
+    <text x="18" y="152" font-size="10.5" fill="#5f6569">
+      el modal de evaluación y el diálogo de aporte.
+    </text>
+    <text x="18" y="176" font-size="10.5" fill="#a8630a">
+      Sin proveedor global de web3: el código de wallet solo se descarga al abrir el diálogo.
+    </text>
+
+    <!-- ---------------- Banda 2: Vercel ---------------- -->
+    <text x="2" y="262" font-family="Consolas,monospace" font-size="9"
+          letter-spacing="1.6" fill="#5f6569">VERCEL · NEXT.JS 16 · APP ROUTER</text>
+    <rect x="0" y="270" width="700" height="212" rx="9" fill="#f6f7f9" stroke="#d3d7dd"/>
+
+    <rect x="18" y="294" width="212" height="56" rx="6" fill="#fff" stroke="#d3d7dd"/>
+    <text x="32" y="316" font-family="Consolas,monospace" font-size="10" font-weight="bold" fill="#1f2bb8">(marketing)/</text>
+    <text x="32" y="334" font-size="10" fill="#5f6569">cabecera de conversión</text>
+
+    <rect x="244" y="294" width="212" height="56" rx="6" fill="#fff" stroke="#d3d7dd"/>
+    <text x="258" y="316" font-family="Consolas,monospace" font-size="10" font-weight="bold" fill="#1f2bb8">(app)/</text>
+    <text x="258" y="334" font-size="10" fill="#5f6569">barra lateral y nav inferior</text>
+
+    <rect x="470" y="294" width="212" height="56" rx="6" fill="#fff" stroke="#d3d7dd"/>
+    <text x="484" y="316" font-family="Consolas,monospace" font-size="10" font-weight="bold" fill="#15181b">lib/data.ts</text>
+    <text x="484" y="334" font-size="10" fill="#5f6569">catálogo semilla tipado</text>
+
+    <rect x="18" y="368" width="438" height="56" rx="6" fill="#eef0fb" stroke="#1f2bb8" stroke-opacity=".35"/>
+    <text x="32" y="390" font-family="Consolas,monospace" font-size="10" font-weight="bold" fill="#1f2bb8">lib/chain/read.ts</text>
+    <text x="32" y="408" font-size="10" fill="#5f6569">lecturas on-chain, deduplicadas por petición con cache()</text>
+
+    <rect x="470" y="368" width="212" height="56" rx="6" fill="#eef0fb" stroke="#1f2bb8" stroke-opacity=".35"/>
+    <text x="484" y="390" font-family="Consolas,monospace" font-size="10" font-weight="bold" fill="#1f2bb8">token.ts</text>
+    <text x="484" y="408" font-size="10" fill="#5f6569">decimales en runtime</text>
+
+    <text x="18" y="454" font-size="10.5" fill="#5f6569">
+      Si faltan las variables de entorno, las lecturas devuelven vacío y la aplicación
+    </text>
+    <text x="18" y="470" font-size="10.5" fill="#5f6569">
+      se renderiza igual: ninguna pantalla depende de la cadena para existir.
+    </text>
+
+    <!-- ---------------- Banda 3: cadena ---------------- -->
+    <text x="2" y="546" font-family="Consolas,monospace" font-size="9"
+          letter-spacing="1.6" fill="#5f6569">ARBITRUM SEPOLIA · 421614</text>
+    <rect x="0" y="554" width="700" height="190" rx="9" fill="#f6f7f9" stroke="#d3d7dd"/>
+
+    <rect x="18" y="580" width="330" height="76" rx="6" fill="#fff" stroke="#1f2bb8" stroke-opacity=".35"/>
+    <text x="32" y="604" font-size="12" font-weight="600" fill="#1f2bb8">CrewdFunding.sol</text>
+    <text x="32" y="622" font-size="9.5" fill="#5f6569">Depósito · liberación por hitos · reembolso</text>
+    <text x="32" y="640" font-family="Consolas,monospace" font-size="8" fill="#5f6569">0x46E8A16C…aa219eCC2</text>
+
+    <rect x="362" y="580" width="320" height="76" rx="6" fill="#fff" stroke="#d3d7dd"/>
+    <text x="376" y="604" font-size="12" font-weight="600" fill="#15181b">MockUSDC.sol</text>
+    <text x="376" y="622" font-size="9.5" fill="#5f6569">ERC-20 de 6 decimales, con grifo</text>
+    <text x="376" y="640" font-family="Consolas,monospace" font-size="8" fill="#5f6569">0xC17E4C6B…1A226CaF</text>
+
+    <text x="18" y="686" font-size="10.5" fill="#5f6569">
+      OpenZeppelin 5 · Solidity 0.8.28 fijado sin acento circunflejo, para que el bytecode
+    </text>
+    <text x="18" y="702" font-size="10.5" fill="#5f6569">
+      desplegado sea exactamente el que pasó los 26 tests. Verificado en Sourcify.
+    </text>
+    <text x="18" y="726" font-size="10.5" fill="#8a2a2a">
+      El líder no puede retirar solo: firma el hito con evidencia y un verificador lo aprueba.
+    </text>
+
+    <!-- ---------------- Flechas ---------------- -->
+    <line x1="180" y1="270" x2="180" y2="204" stroke="#1f2bb8" stroke-width="1.6" marker-end="url(#arrow)"/>
+    <text x="192" y="234" font-size="10" fill="#1f2bb8">HTML ya renderizado, con las cifras dentro</text>
+    <text x="192" y="249" font-size="9" fill="#5f6569">importa para el SEO de la landing y para un teléfono lento</text>
+
+    <line x1="180" y1="482" x2="180" y2="548" stroke="#1f2bb8" stroke-width="1.6" marker-end="url(#arrow)"/>
+    <text x="192" y="506" font-size="10" fill="#1f2bb8">Lectura · viem sobre RPC de Tenderly</text>
+    <text x="192" y="521" font-size="9" fill="#5f6569">getProject · escrowOf · getMilestones · eventos</text>
+
+    <polyline points="670,106 670,126 738,126 738,614 706,614" fill="none"
+              stroke="#a8630a" stroke-width="1.6" stroke-dasharray="4 3"
+              marker-end="url(#arrowAmber)"/>
+    <text transform="translate(752,238) rotate(90)" font-size="10" fill="#a8630a">
+      Escritura · firma en MetaMask
+    </text>
+    <text transform="translate(752,412) rotate(90)" font-size="9" fill="#5f6569">
+      approve + donate · sin pasar por el servidor
+    </text>
+  </svg>
+
+  <footer>
+    <p class="label">
+      github.com/alberth25or-cmd/crewd · crewd-nine.vercel.app
+    </p>
+  </footer>
+</section>
+
+<!-- ============================ PÁGINA 2 ============================ -->
+<section class="page">
+  <header>
+    <p class="label">Arquitectura · flujos y decisiones</p>
+    <h1>Cómo circula el dato</h1>
+  </header>
+
+  <div class="cols">
+    <div>
+      <h2>Camino de lectura</h2>
+      <p class="lead" style="margin-bottom:8px">Todo ocurre en el servidor, antes de enviar el HTML.</p>
+      <ol class="steps">
+        <li>El componente de página pide el estado de las tesorerías con <code>getFundingSummaries()</code>.</li>
+        <li>Se calcula <code>keccak256(slug)</code> y se busca el <code>projectId</code> on-chain. Cero significa sin registrar.</li>
+        <li>Se leen <code>getProject</code>, <code>escrowOf</code> y <code>getMilestones</code>. El transporte agrupa todas las llamadas en una sola petición HTTP.</li>
+        <li>Los decimales del token se leen del contrato y se cachean por <code>(chainId, dirección)</code>, nunca por símbolo.</li>
+        <li>Los importes se serializan a texto: un componente de servidor no puede pasar <code>bigint</code> a uno de cliente.</li>
+        <li>El navegador recibe la página con las cifras ya dentro. Ninguna petición extra.</li>
+      </ol>
+    </div>
+
+    <div>
+      <h2>Camino de escritura</h2>
+      <p class="lead" style="margin-bottom:8px">Solo aquí aparece una wallet, y solo si alguien la abre.</p>
+      <ol class="steps">
+        <li>Se pulsa <b>Apoya este proyecto</b>. Recién entonces se carga el código de wallet.</li>
+        <li>Se conecta MetaMask y se comprueba la red. Si no coincide, se ofrece cambiarla.</li>
+        <li>Se lee el <code>allowance</code>. Solo se pide firma de <code>approve</code> si el permiso actual no alcanza.</li>
+        <li>Se envía <code>donate(projectId, amount)</code>. El contrato contabiliza por diferencia de saldo, no por el nominal.</li>
+        <li>Se espera el recibo y se llama a <code>router.refresh()</code>, que vuelve a leer el estado en el servidor.</li>
+        <li>La pantalla de confirmación enlaza a la transacción en Arbiscan.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2 style="margin-top:20px">Decisiones que explican la forma</h2>
+  <div class="cols" style="gap:14px">
+    <div class="card brand">
+      <h3>Leer en el servidor, escribir en el cliente</h3>
+      <p style="margin:0;color:var(--dim)">
+        Leer no necesita firma, así que va en el servidor: la página llega completa,
+        la clave del RPC no se expone y no hay cascada de peticiones en el móvil.
+        Escribir sí necesita firma, y una firma solo puede salir del navegador.
+      </p>
+    </div>
+    <div class="card accent">
+      <h3>La cadena es invisible hasta que mueves dinero</h3>
+      <p style="margin:0;color:var(--dim)">
+        Navegar, postular, cerrar sprints y evaluar no piden wallet en ningún momento.
+        Las cifras sí se ven en todas partes, porque si no se ven nadie descubre que
+        puede apoyar. Mirar es público; firmar es opcional.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Degradación en tres niveles</h3>
+      <p style="margin:0;color:var(--dim)">
+        Sin contratos configurados, aviso de reservado. Con contratos pero sin tesorería,
+        aviso explícito. Con tesorería, cifras y trazabilidad. Un RPC caído nunca
+        tumba una página.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Sin base de datos</h3>
+      <p style="margin:0;color:var(--dim)">
+        El catálogo son datos semilla tipados. Esos tipos ya son el contrato que
+        una API real tendría que cumplir, así que sustituirlos no toca la interfaz.
+      </p>
+    </div>
+  </div>
+
+  <h2 style="margin-top:18px">Tecnologías</h2>
+  <table>
+    <tr><th style="width:22%">Capa</th><th style="width:38%">Herramientas</th><th>Nota</th></tr>
+    <tr>
+      <td>Interfaz</td>
+      <td>Next.js 16.3 · React 19.2 · Tailwind 4 · Motion 13</td>
+      <td>TypeScript en <code>ES2020</code>, mínimo para literales <code>BigInt</code></td>
+    </tr>
+    <tr>
+      <td>Cadena</td>
+      <td>Solidity 0.8.28 · OpenZeppelin 5 · Hardhat 2.22 · viem 2.55</td>
+      <td>26 tests, incluidos reentrada y token con comisión</td>
+    </tr>
+    <tr>
+      <td>Infraestructura</td>
+      <td>Vercel · RPC de Tenderly · Sourcify</td>
+      <td>El RPC oficial de Arbitrum está bloqueado en la red de desarrollo</td>
+    </tr>
+  </table>
+
+  <p class="note accent" style="margin-top:16px">
+    <b>Límite conocido y documentado:</b> el rol de verificador está centralizado en la
+    plataforma. Es el punto de confianza que queda por resolver, y la vía natural es
+    que sean los donantes quienes voten la aprobación de cada hito.
+  </p>
+
+  <footer>
+    <p class="label">Crewd · Documento de arquitectura · Fase 1</p>
+  </footer>
+</section>
+
+</body>
+</html>
