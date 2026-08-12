@@ -53,3 +53,5 @@ contracts/deployments/hardhat.json
 # --- prototipo de referencia ---
 # Diseño previo del que se tomó la estructura móvil. No forma parte del build.
 yapeinterface/node_modules/
+
+.vercel
