@@ -5,8 +5,9 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { projects, getUserById } from "@/lib/data";
-import type { FundingSummary } from "@/lib/chain/read";
+import type { ChainInfo, FundingSummary } from "@/lib/chain/read";
 import { FundingBadge } from "@/components/funding/FundingBadge";
+import { SupportButton } from "@/components/funding/SupportButton";
 import { Avatar, Chip, EmptyState, Progress, StatusMark } from "@/components/ui";
 
 /**
@@ -40,8 +41,10 @@ const HOURS = [
 
 export function ProjectsFeed({
   funding,
+  chain,
 }: {
   funding: Record<string, FundingSummary>;
+  chain: ChainInfo | null;
 }) {
   const [intent, setIntent] = useState<Intent>("todos");
   const [query, setQuery] = useState("");
@@ -253,63 +256,82 @@ export function ProjectsFeed({
                 transition={{ duration: 0.3, delay: Math.min(i * 0.06, 0.24) }}
                 className="h-full"
               >
-                <Link
-                  href={`/proyectos/${p.slug}`}
-                  className="card flex h-full flex-col p-4 transition-colors hover:border-brand/50"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <StatusMark status={p.status} />
-                    <span className="label">{p.modality}</span>
-                  </div>
-
-                  <h2 className="display mt-3 text-2xl">{p.title}</h2>
-                  <p className="mt-1.5 flex-1 text-[14px] leading-relaxed text-dim">
-                    {p.summary}
-                  </p>
-
-                  {open.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {open.slice(0, 3).map((r) => (
-                        <Chip key={r.id} verified={r.reservedForNewcomers}>
-                          {r.title} · {r.hoursPerWeek}h
-                        </Chip>
-                      ))}
+                {/* El enlace envuelve solo el contenido. El botón de apoyo
+                    queda fuera: un <button> dentro de un <a> es HTML
+                    inválido y el clic dispararía las dos acciones. */}
+                <div className="card flex h-full flex-col p-4 transition-colors hover:border-brand/50">
+                  <Link
+                    href={`/proyectos/${p.slug}`}
+                    className="flex flex-1 flex-col"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <StatusMark status={p.status} />
+                      <span className="label">{p.modality}</span>
                     </div>
-                  )}
 
-                  {p.sprints.length > 0 && (
-                    <div className="mt-4">
-                      <div className="mb-1.5 flex items-baseline justify-between">
-                        <span className="label">Avance</span>
-                        <span className="figure text-[12px] text-dim">
-                          {closed} / {p.sprints.length} sprints
-                        </span>
+                    <h2 className="display mt-3 text-2xl">{p.title}</h2>
+                    <p className="mt-1.5 flex-1 text-[14px] leading-relaxed text-dim">
+                      {p.summary}
+                    </p>
+
+                    {open.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {open.slice(0, 3).map((r) => (
+                          <Chip key={r.id} verified={r.reservedForNewcomers}>
+                            {r.title} · {r.hoursPerWeek}h
+                          </Chip>
+                        ))}
                       </div>
-                      <Progress value={(closed / p.sprints.length) * 100} />
-                    </div>
-                  )}
+                    )}
 
-                  {money && <FundingBadge summary={money} />}
+                    {p.sprints.length > 0 && (
+                      <div className="mt-4">
+                        <div className="mb-1.5 flex items-baseline justify-between">
+                          <span className="label">Avance</span>
+                          <span className="figure text-[12px] text-dim">
+                            {closed} / {p.sprints.length} sprints
+                          </span>
+                        </div>
+                        <Progress value={(closed / p.sprints.length) * 100} />
+                      </div>
+                    )}
 
-                  <div className="mt-4 flex items-center justify-between border-t border-line pt-3">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <Avatar name={leader.name} size={26} />
-                      <span className="min-w-0">
-                        <span className="block truncate text-[13px] font-medium">
-                          {leader.name}
-                        </span>
-                        <span className="label">
-                          {Math.round((leader.completionRate ?? 0) * 100)}% finalización
+                    <div className="mt-4 flex items-center justify-between border-t border-line pt-3">
+                      <span className="flex min-w-0 items-center gap-2">
+                        <Avatar name={leader.name} size={26} />
+                        <span className="min-w-0">
+                          <span className="block truncate text-[13px] font-medium">
+                            {leader.name}
+                          </span>
+                          <span className="label">
+                            {Math.round((leader.completionRate ?? 0) * 100)}% finalización
+                          </span>
                         </span>
                       </span>
-                    </span>
-                    <span className="label shrink-0 text-brand">
-                      {open.length > 0
-                        ? `${open.length} ${open.length === 1 ? "rol" : "roles"} →`
-                        : "Ver →"}
-                    </span>
-                  </div>
-                </Link>
+                      <span className="label shrink-0 text-brand">
+                        {open.length > 0
+                          ? `${open.length} ${open.length === 1 ? "rol" : "roles"} →`
+                          : "Ver →"}
+                      </span>
+                    </div>
+                  </Link>
+
+                  {money && (
+                    <>
+                      <FundingBadge summary={money} />
+                      {chain && (
+                        <div className="mt-3">
+                          <SupportButton
+                            summary={money}
+                            chain={chain}
+                            projectTitle={p.title}
+                            size="sm"
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </motion.div>
             );
           })

@@ -41,7 +41,7 @@ export function DonateButton(props: {
     <>
       <Button onClick={() => setOpen(true)} className="w-full">
         <Heart className="h-4 w-4" />
-        Aportar al proyecto
+        Apoya este proyecto
       </Button>
 
       <DonateDialog open={open} onClose={() => setOpen(false)} {...props} />

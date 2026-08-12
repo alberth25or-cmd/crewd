@@ -3,6 +3,7 @@ import { keccak256, toBytes, type Address } from "viem";
 import { crewdFundingAbi } from "./abis";
 import {
   deployBlock,
+  explorerBase,
   fundingAddress,
   isChainConfigured,
   publicClient,
@@ -59,6 +60,33 @@ export interface FundingSummary {
   status: ProjectStatus;
   symbol: string;
   decimals: number;
+}
+
+/**
+ * Datos de la cadena que el navegador necesita para firmar.
+ *
+ * Se pasan como props desde el servidor en vez de importar `config.ts` en el
+ * cliente: así el listado no arrastra el cliente RPC al bundle solo por
+ * mostrar un botón.
+ */
+export interface ChainInfo {
+  fundingAddress: Address;
+  tokenAddress: Address;
+  chainId: number;
+  chainName: string;
+  explorerBase: string | null;
+}
+
+/** `null` si la cadena no está configurada. */
+export function getChainInfo(): ChainInfo | null {
+  if (!isChainConfigured || !fundingAddress || !stablecoinAddress) return null;
+  return {
+    fundingAddress,
+    tokenAddress: stablecoinAddress,
+    chainId: chain.id,
+    chainName: chain.name,
+    explorerBase,
+  };
 }
 
 export type TraceKind = "donacion" | "liberacion" | "fallo" | "reembolso";

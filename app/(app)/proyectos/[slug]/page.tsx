@@ -75,7 +75,16 @@ export default async function ProjectPage({
           lateral fija; en móvil van primero, porque son el dato que
           decide si alguien sigue leyendo o no. */}
       <div className="px-4 py-6 lg:grid lg:grid-cols-[1fr_360px] lg:gap-x-10 lg:px-0 lg:py-8">
-        <aside className="space-y-8 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-8 lg:self-start">
+        <aside className="space-y-8 lg:col-start-2 lg:row-start-1 lg:self-start">
+          {/* La tesorería va primero: es la acción que cualquiera puede
+              tomar sin tener que leerse el roadmap. Se degrada sola a un
+              aviso si no hay contratos configurados, así que la página
+              nunca depende de la cadena para renderizarse. */}
+          <section>
+            <SectionHead title="Financiamiento" />
+            <FundingPanel slug={project.slug} title={project.title} />
+          </section>
+
           <section>
             <SectionHead title="Quien lidera" />
             <Card>
@@ -403,13 +412,6 @@ export default async function ProjectPage({
             )}
           </section>
 
-          {/* Tesorería on-chain. Se degrada sola a un aviso si no hay
-              contratos configurados, así que la página no depende de la
-              cadena para renderizarse. */}
-          <section>
-            <SectionHead title="Financiamiento" />
-            <FundingPanel slug={project.slug} title={project.title} />
-          </section>
         </div>
       </div>
     </div>
