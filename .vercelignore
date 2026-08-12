@@ -1,0 +1,13 @@
+# Nada de esto forma parte del build de Next. Excluirlo acelera la subida y
+# evita que Vercel intente resolver dependencias que no le corresponden.
+
+# Workspace de contratos: tiene su propio package.json y su propio runner.
+contracts/
+
+# Prototipo de referencia del que se tomó la estructura móvil.
+yapeinterface/
+
+# Herramientas de diagnóstico que solo se ejecutan en local.
+scripts/
+
+docs/
