@@ -53,6 +53,11 @@ const fundingAbi = [
   { type: "function", name: "projectCount", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "token", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" },
   { type: "function", name: "projectIdBySlugHash", inputs: [{ type: "bytes32" }], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "paused", inputs: [], outputs: [{ type: "bool" }], stateMutability: "view" },
+  { type: "function", name: "CURATOR_ROLE", inputs: [], outputs: [{ type: "bytes32" }], stateMutability: "view" },
+  { type: "function", name: "VERIFIER_ROLE", inputs: [], outputs: [{ type: "bytes32" }], stateMutability: "view" },
+  { type: "function", name: "hasRole", inputs: [{ type: "bytes32" }, { type: "address" }], outputs: [{ type: "bool" }], stateMutability: "view" },
+  { type: "function", name: "createProject", inputs: [{ type: "string" }, { type: "address" }, { type: "uint32" }], outputs: [{ type: "uint256" }], stateMutability: "nonpayable" },
 ];
 
 const read = (address, abi, functionName, args) =>
@@ -79,9 +84,54 @@ for (const slug of SLUGS) {
   console.log(`  ${slug.padEnd(20)} ${id === 0n ? "SIN REGISTRAR" : `id ${id}`}`);
 }
 
+/* --------------------------------------------------------------------------
+   Si falta registrar proyectos, comprobamos por qué antes de culpar a nadie.
+   Un `createProject` puede fallar por permisos, por pausa o por un problema
+   de la herramienta con la que se llama. Simular la llamada separa las tres.
+   -------------------------------------------------------------------------- */
+
+const CALLER = process.argv[2];
+
+if (CALLER) {
+  console.log(`\n--- Diagnóstico para ${CALLER} ---`);
+
+  const [curatorRole, verifierRole, isPaused] = await Promise.all([
+    read(FUNDING, fundingAbi, "CURATOR_ROLE"),
+    read(FUNDING, fundingAbi, "VERIFIER_ROLE"),
+    read(FUNDING, fundingAbi, "paused"),
+  ]);
+
+  const [isCurator, isVerifier] = await Promise.all([
+    read(FUNDING, fundingAbi, "hasRole", [curatorRole, CALLER]),
+    read(FUNDING, fundingAbi, "hasRole", [verifierRole, CALLER]),
+  ]);
+
+  console.log(`Rol CURATOR    ${isCurator ? "sí" : "NO — createProject revertirá"}`);
+  console.log(`Rol VERIFIER   ${isVerifier ? "sí" : "NO — no podrá aprobar hitos"}`);
+  console.log(`Contrato       ${isPaused ? "PAUSADO — nada funcionará" : "activo"}`);
+
+  // Simulación: ejecuta la llamada en el nodo sin firmarla ni gastar gas.
+  // Si aquí pasa, el contrato aceptaría la transacción y el problema está
+  // en la herramienta que la envía.
+  try {
+    await client.simulateContract({
+      address: FUNDING,
+      abi: fundingAbi,
+      functionName: "createProject",
+      args: ["agua-limpia", CALLER, 6],
+      account: CALLER,
+    });
+    console.log(`Simulación     PASA — el contrato aceptaría la llamada`);
+  } catch (e) {
+    const reason = e.shortMessage ?? e.message?.split("\n")[0] ?? String(e);
+    console.log(`Simulación     FALLA — ${reason}`);
+  }
+}
+
 const missing = SLUGS.length - Number(count);
 console.log(
   missing > 0
-    ? `\nFaltan ${missing}. Llama a createProject desde Remix para los que digan SIN REGISTRAR.\n`
+    ? `\nFaltan ${missing}. Llama a createProject para los que digan SIN REGISTRAR.` +
+        (CALLER ? "\n" : "\nPasa tu dirección para diagnosticar: node scripts/check-chain.mjs 0xTuDireccion\n")
     : "\nTodo listo.\n"
 );
